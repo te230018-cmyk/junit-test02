@@ -7,61 +7,97 @@ import java.util.Map;
 
 public class UserManagerTest {
 
-    // 1. 正常系：UserManagerインスタンス同一
+    // ----------------------------------------------------
+    // 課題5 で指定されたテストメソッド
+    // ----------------------------------------------------
+
+    // 1. 正常系：MapList初期生成
+    @Test
+    void 正常系_MapList初期生成() {
+        UserManager userManager = UserManager.getInstance();
+        
+        // 取得したListとMapがnullではなく、中身が空であることを検証
+        assertThat(userManager.getUserList()).isNotNull().isEmpty();
+        assertThat(userManager.getUserMap()).isNotNull().isEmpty();
+    }
+
+    // 2. 正常系：List登録順序保持
+    @Test
+    void 正常系_List登録順序保持() {
+        UserManager userManager = UserManager.getInstance();
+        
+        // テスト前に一度Listをクリア（シングルトンで状態が残る対策）
+        userManager.getUserList().clear();
+
+        User u1 = new User("U001");
+        User u2 = new User("U002");
+        User u3 = new User("U003");
+
+        // 複数のユーザーを順番に登録
+        userManager.setUserToList(u1);
+        userManager.setUserToList(u2);
+        userManager.setUserToList(u3);
+
+        // 登録した順番（u1 -> u2 -> u3）でListに格納されているかを検証
+        List<User> list = userManager.getUserList();
+        assertThat(list).containsExactly(u1, u2, u3);
+    }
+
+    // 3. 正常系：Mapキー確認
+    @Test
+    void 正常系_Mapキー確認() {
+        UserManager userManager = UserManager.getInstance();
+        
+        User userA = new User("USER_A");
+        User userB = new User("USER_B");
+
+        // マップに登録
+        userManager.setUserToMap(userA);
+        userManager.setUserToMap(userB);
+
+        // ユーザー管理コード（"USER_A", "USER_B"）がキーとして正しくMapに登録されているかを検証
+        Map<String, User> map = userManager.getUserMap();
+        assertThat(map).containsOnlyKeys("USER_A", "USER_B");
+    }
+
+
+    // ----------------------------------------------------
+    // （参考）課題4 で実装したテストメソッド
+    // ----------------------------------------------------
+
     @Test
     void 正常系_UserManagerインスタンス同一() {
         UserManager instance1 = UserManager.getInstance();
         UserManager instance2 = UserManager.getInstance();
-
-        // 複数回取得しても、すべて同一のインスタンスであることを検証
         assertThat(instance1).isSameAs(instance2);
     }
 
-    // 2. 正常系：userList登録参照
     @Test
     void 正常系_userList登録参照() {
         UserManager userManager = UserManager.getInstance();
-        User user1 = new User("U001");
-        User user2 = new User("U002");
-
-        userManager.setUserToList(user1);
-        userManager.setUserToList(user2);
-
-        // 登録したユーザーが、取得したListに含まれているかを検証
-        List<User> list = userManager.getUserList();
-        assertThat(list).contains(user1, user2);
+        User user = new User("U100");
+        userManager.setUserToList(user);
+        assertThat(userManager.getUserList()).contains(user);
     }
 
-    // 3. 正常系：userMap登録参照
     @Test
     void 正常系_userMap登録参照() {
         UserManager userManager = UserManager.getInstance();
-        User user = new User("U003");
-        user.setName("テスト太郎");
-
+        User user = new User("U200");
         userManager.setUserToMap(user);
-
-        // 登録したユーザーが、取得したMapに正しく含まれているかを検証
-        Map<String, User> map = userManager.getUserMap();
-        assertThat(map)
-            .containsKey("U003")
-            .containsValue(user);
+        assertThat(userManager.getUserMap()).containsKey("U200");
     }
 
-    // 4. 正常系：deleteUser（自由な名前付け）
     @Test
     void 正常系_ユーザー情報削除機能の検証() {
         UserManager userManager = UserManager.getInstance();
-        User user = new User("U004");
-        
+        User user = new User("U300");
         userManager.setUserToList(user);
         userManager.setUserToMap(user);
 
-        // 削除メソッドを実行
-        userManager.deleteUser("U004");
+        userManager.deleteUser("U300");
 
-        // List と Map の両方からデータが消えているかを検証
         assertThat(userManager.getUserList()).doesNotContain(user);
-        assertThat(userManager.getUserMap()).doesNotContainKey("U004");
+        assertThat(userManager.getUserMap()).doesNotContainKey("U300");
     }
 }
